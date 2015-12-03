@@ -1,0 +1,44 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides: gige camera grab
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Grab
+# Description: This file starts and stops gige camera capturing
+#
+### END INIT INFO
+
+GRAB_USER=jondoe
+export GRAB_PATH=/tmp/
+export GRAB_EXPOSURE=800
+export GRAB_HEIGHT=32
+
+
+# some pylon stuff
+export PYLON_ROOT=/opt/pylon4
+export GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
+export GENICAM_CACHE_v2_3=${HOME}/genicam_xml_cache
+gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
+pylonlibdir=$PYLON_ROOT/lib64
+export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
+
+case "$1" in
+ start)
+   su $GRAB_USER -c grab
+   ;;
+ stop)
+   pkill -9 grab
+   sleep 10
+   ;;
+ restart)
+   pkill -9 grab
+   sleep 20
+   su $GRAB_USER -c grab
+   ;;
+ *)
+   echo "Usage: grab-service {start|stop|restart}" >&2
+   exit 3
+   ;;
+esac

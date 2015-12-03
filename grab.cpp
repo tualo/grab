@@ -1,61 +1,337 @@
 // grab.cpp
-/*
-   This sample illustrates how to grab and process images using the CInstantCamera class.
-   The images are grabbed and processed asynchronously, i.e.,
-   while the application is processing a buffer, the acquisition of the next buffer is done
-   in parallel.
 
-   The CInstantCamera class uses a pool of buffers to retrieve image data
-   from the camera device. Once a buffer is filled and ready,
-   the buffer can be retrieved from the camera object for processing. The buffer
-   and additional image data are collected in a grab result. The grab result is
-   held by a smart pointer after retrieval. The buffer is automatically reused
-   when explicitly released or when the smart pointer object is destroyed.
-*/
-
-// Include files to use the PYLON API.
 #include <pylon/PylonIncludes.h>
-#ifdef PYLON_WIN_BUILD
-#    include <pylon/PylonGUI.h>
-#endif
-
 #include <stdio.h>
 #include <cstdlib>
+#include <fstream>
+#include <pylon/gige/BaslerGigEInstantCamera.h>
+
+#include <sys/time.h>
+
 // Namespace for using pylon objects.
 using namespace Pylon;
 using namespace GenApi;
-
-// Namespace for using cout.
 using namespace std;
-
-// Number of images to be grabbed.
-static const uint32_t c_countOfImagesToGrab = 10000;
-
-const char Filename[] = "NodeMap.pfs";
-
-#include <pylon/gige/BaslerGigEInstantCamera.h>
 typedef Pylon::CBaslerGigEInstantCamera Camera_t;
 using namespace Basler_GigECameraParams;
-
-
-
+struct timeval ts;
+// Number of images to be grabbed.
+static const uint32_t c_countOfImagesToGrab = 10000;
 std::string prefix = "/tmp/";
 
+void writetags(ofstream *pFile,int nx,int ny){
+  int offset =0;
+  int samples=3;
+  // number of dictionary entries
+  pFile->put(0x00);
+  pFile->put(0x0e);
 
-void BM_WriteHexString(FILE *fptr,char *s)
-{
-   unsigned int i,c;
-   char hex[3];
 
-   for (i=0;i<strlen(s);i+=2) {
-      hex[0] = s[i];
-      hex[1] = s[i+1];
-      hex[2] = '\0';
-      sscanf(hex,"%X",&c);
-      putc(c,fptr);
-   }
+  // width
+  pFile->put(0x01); // tag
+  pFile->put(0x00); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put( (nx & 0xff00) / 256 );
+  pFile->put( (nx & 0x00ff) );
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+
+  // height
+  pFile->put(0x01); // tag
+  pFile->put(0x01); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put( (ny & 0xff00) / 256 );
+  pFile->put( (ny & 0x00ff) );
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // bits per sample
+  pFile->put(0x01); // tag
+  pFile->put(0x02); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put((char) samples); // value count
+
+
+  offset = nx * ny * samples + 182;
+  pFile->put( (offset & 0xff000000) / 16777216) ;
+  pFile->put( (offset & 0x00ff0000) / 65536 );
+  pFile->put( (offset & 0x0000ff00) / 256 );
+  pFile->put( (offset & 0x000000ff) );
+
+  // Compression //010300030000000100010000
+  pFile->put(0x01); // tag
+  pFile->put(0x03); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00);
+  pFile->put(0x01);
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // interpolation //010600030000000100020000
+  pFile->put(0x01); // tag
+  pFile->put(0x06); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00);
+  pFile->put(0x02);
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // strip offset  //011100040000000100000008
+  pFile->put(0x01); // tag
+  pFile->put(0x11); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x04); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00);
+  pFile->put(0x00);
+
+  pFile->put(0x00);
+  pFile->put(0x08);
+
+  //orientation 011200030000000100010000
+  pFile->put(0x01); // tag
+  pFile->put(0x12); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00);
+  pFile->put(0x01);
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // samples per pixel 011500030000000100030000
+  pFile->put(0x01); // tag
+  pFile->put(0x15); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00);
+  pFile->put((char)samples);
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // rows per strip 0116000300000001
+  pFile->put(0x01); // tag
+  pFile->put(0x16); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put( (ny & 0xff00) / 256);
+  pFile->put( (ny & 0x00ff) );
+
+  pFile->put(0x00); // space
+  pFile->put(0x00); // space
+
+  // byte count  0117000400000001
+  pFile->put(0x01); // tag
+  pFile->put(0x17); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x04); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  offset = nx * ny * samples;
+  pFile->put((offset & 0xff000000) / 16777216 );
+  pFile->put((offset & 0x00ff0000) / 65536 );
+  pFile->put((offset & 0x0000ff00) / 256 );
+  pFile->put((offset & 0x000000ff) );
+
+  // minimum sample value 0118000300000003
+  pFile->put(0x01); // tag
+  pFile->put(0x18); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put((char)samples); // value count
+
+  offset = nx * ny * samples + 188;
+  pFile->put((offset & 0xff000000) / 16777216 );
+  pFile->put((offset & 0x00ff0000) / 65536 );
+  pFile->put((offset & 0x0000ff00) / 256 );
+  pFile->put((offset & 0x000000ff) );
+
+  // maximum sample value 0119000300000003
+  pFile->put(0x01); // tag
+  pFile->put(0x19); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put((char)samples); // value count
+
+  offset = nx * ny * samples + 194;
+  pFile->put((offset & 0xff000000) / 16777216 );
+  pFile->put((offset & 0x00ff0000) / 65536 );
+  pFile->put((offset & 0x0000ff00) / 256 );
+  pFile->put((offset & 0x000000ff) );
+
+  //planar configuration tag,  011c00030000000100010000
+  pFile->put(0x01); // tag
+  pFile->put(0x1c); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x01); // value count
+
+  pFile->put(0x00); // value
+  pFile->put(0x01); // value
+  pFile->put(0x00); // value
+  pFile->put(0x00); // value
+
+  // sample format 0153000300000003
+  pFile->put(0x01); // tag
+  pFile->put(0x53); // tag
+
+  pFile->put(0x00); // tagtype
+  pFile->put(0x03); // tagtype
+
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x00); // value count
+  pFile->put(0x03); // value count
+
+  offset = nx * ny * samples + 200;
+  pFile->put((offset & 0xff000000) / 16777216 );
+  pFile->put((offset & 0x00ff0000) / 65536 );
+  pFile->put((offset & 0x0000ff00) / 256 );
+  pFile->put((offset & 0x000000ff) );
+  // dic end 00 00 00 00
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+
+  // bits color channel
+  pFile->put(0x00);
+  pFile->put(0x08);
+  pFile->put(0x00);
+  pFile->put(0x08);
+  pFile->put(0x00);
+  pFile->put(0x08);
+  // minimum
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+  pFile->put(0x00);
+  // maximum
+  pFile->put(0x00);
+  pFile->put(0xff);
+  pFile->put(0x00);
+  pFile->put(0xff);
+  pFile->put(0x00);
+  pFile->put(0xff);
+  //samples per pixel
+  pFile->put(0x00);
+  pFile->put(0x01);
+  pFile->put(0x00);
+  pFile->put(0x01);
+  pFile->put(0x00);
+  pFile->put(0x01);
 }
 
+void writeheader(ofstream *pFile, int nx,int ny){
+  int offset =0;
+  int samples=3;
+  pFile->seekp(0,ios_base::beg);
+  // tiff header 4d4d002a
+  pFile->put(0x4d);
+  pFile->put(0x4d);
+  pFile->put(0x00);
+  pFile->put(0x2a);
+
+  offset = nx * ny * samples + 8;
+  pFile->put( (offset & 0xff000000) / 16777216) ;
+  pFile->put( (offset & 0x00ff0000) / 65536 );
+  pFile->put( (offset & 0x0000ff00) / 256 );
+  pFile->put( (offset & 0x000000ff) );
+
+}
 
 int main(int argc, char* argv[])
 {
@@ -77,7 +353,8 @@ int main(int argc, char* argv[])
     int m=0;
     bool inimage = false;
     bool usetiff = true;
-    FILE* pFile;
+    //ofstream pFile;
+    ofstream* pFile;// = new fstream();
 
     int imageCounter = 0;
 
@@ -90,6 +367,7 @@ int main(int argc, char* argv[])
     }
     if(const char* env_exp = std::getenv("GRAB_EXPOSURE")){
       grabExposure = atoi(env_exp);
+      cout << "setting exposure to " << grabExposure;
     }
     if(const char* env_hgt = std::getenv("GRAB_HEIGHT")){
       grabHeight = atoi(env_hgt);
@@ -167,7 +445,7 @@ int main(int argc, char* argv[])
         // Start the grabbing of c_countOfImagesToGrab images.
         // The camera device is parameterized with a default configuration which
         // sets up free-running continuous acquisition.
-        camera.StartGrabbing( c_countOfImagesToGrab);
+        camera.StartGrabbing();// c_countOfImagesToGrab);
 
         // This smart pointer will receive the grab result data.
         CGrabResultPtr ptrGrabResult;
@@ -190,8 +468,14 @@ int main(int argc, char* argv[])
                 //cout << "Gray value of first pixel: " << (uint32_t) pImageBuffer[0] << endl << endl;
                 mainAVGSum = 0;
                 m = (int)ptrGrabResult->GetImageSize();
+                char dst[m*3];
                 for(i=0;i<m;i++){
                   mainAVGSum+= (uint32_t) pImageBuffer[i];
+
+                  dst[i*3]=pImageBuffer[i];
+                  dst[i*3+1]=pImageBuffer[i];
+                  dst[i*3+2]=pImageBuffer[i];
+
                 }
 
                 currentAVG = (mainAVGSum/m);
@@ -200,8 +484,8 @@ int main(int argc, char* argv[])
 
                 if ( adjustAVG == 1){
                   mainAVG = currentAVG;
-                  startAVG =  mainAVG + mainAVG*0.1;
-                  stopAVG =  mainAVG - mainAVG*0.1;
+                  startAVG =  mainAVG + 10;
+                  stopAVG =  mainAVG;// - 10;
                   cout << "startAVG: " << startAVG << endl;
                   cout << "stopAVG: " << stopAVG << endl;
 
@@ -211,146 +495,51 @@ int main(int argc, char* argv[])
                     if(usetiff){
                        ny = currentHeight;
                        nx = ptrGrabResult->GetWidth();
-
-                       /* Write the footer */
-                       WriteHexString(pFile,"000e");  /* The number of directory entries (14) */
-
-                       /* Width tag, short int */
-                       WriteHexString(pFile,"0100000300000001");
-                       fputc((nx & 0xff00) / 256,pFile);    /* Image width */
-                       fputc((nx & 0x00ff),pFile);
-                       WriteHexString(pFile,"0000");
-
-                       /* Height tag, short int */
-                       WriteHexString(pFile,"0101000300000001");
-                       fputc((ny & 0xff00) / 256,pFile);    /* Image height */
-                       fputc((ny & 0x00ff),pFile);
-                       WriteHexString(pFile,"0000");
-
-                       /* Bits per sample tag, short int */
-                       WriteHexString(pFile,"0102000300000003");
-                       offset = nx * ny * 1 + 182;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
-
-                       /* Compression flag, short int */
-                       WriteHexString(pFile,"010300030000000100010000");
-
-                       /* Photometric interpolation tag, short int */
-                       WriteHexString(pFile,"010600030000000100020000");
-
-                       /* Strip offset tag, long int */
-                       WriteHexString(pFile,"011100040000000100000008");
-
-                       /* Orientation flag, short int */
-                       WriteHexString(pFile,"011200030000000100010000");
-
-                       /* Sample per pixel tag, short int */
-                       WriteHexString(pFile,"011500030000000100010000");
-
-                       /* Rows per strip tag, short int */
-                       WriteHexString(pFile,"0116000300000001");
-                       fputc((ny & 0xff00) / 256,pFile);
-                       fputc((ny & 0x00ff),pFile);
-                       WriteHexString(pFile,"0000");
-
-                       /* Strip byte count flag, long int */
-                       WriteHexString(pFile,"0117000400000001");
-                       offset = nx * ny * 1;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
-
-                       /* Minimum sample value flag, short int */
-                       WriteHexString(pFile,"0118000300000001");
-                       offset = nx * ny * 1 + 188;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
-
-                       /* Maximum sample value tag, short int */
-                       WriteHexString(pFile,"0119000300000001");
-                       offset = nx * ny * 1 + 194;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
-
-                       /* Planar configuration tag, short int */
-                       WriteHexString(pFile,"011c00030000000100010000");
-
-                       /* Sample format tag, short int */
-                       WriteHexString(pFile,"0153000300000003");
-                       offset = nx * ny * 1 + 200;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
-
-                       /* End of the directory entry */
-                       WriteHexString(pFile,"00000000");
-
-                       /* Bits for each colour channel */
-                       WriteHexString(pFile,"000800080008");
-
-                       /* Minimum value for each component */
-                       WriteHexString(pFile,"000000000000");
-
-                       /* Maximum value per channel */
-                       WriteHexString(pFile,"00ff");//00ff00ff");
-
-                       /* Samples per pixel for each channel */
-                       WriteHexString(pFile,"0001");//00010001");
-
-
-                       // correcting the header
-                       cout << "todo, orrecting the header" << endl;
-                       /* Big endian & TIFF identifier */
-                       offset = nx * ny * 1 + 8;
-                       fseek ( pFile , 8 , SEEK_SET );
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
+                       writetags(pFile,nx,ny);
+                       writeheader(pFile,nx,ny);
                     }
+                    pFile->close();
 
-                    fclose(pFile);
-
-                    cout << "stop image " << endl;
+                    cout << endl;
                     inimage = false;
 
                   }else{
                     // ok write the image
                     currentHeight += ptrGrabResult->GetHeight();
-                    fwrite(pImageBuffer, 1, m, pFile);
+                    //fwrite(pImageBuffer, 1, m, pFile);
+                    // = reinterpret_cast<char*>(pImageBuffer);
+                    //cout << filename << " write " << m*3 << "bytes" << endl;
+                    pFile->write(dst,m*3);
                   }
 
                 }else if (!inimage){
                   if (currentAVG>=startAVG){
-                    cout << "start image " << imageCounter << endl;
+                    //cout << "start image " << imageCounter << endl;
                     inimage=true;
 
 
 
-                    std::string format = prefix+std::string("%08d.tiff");
-                    sprintf(filename, format.c_str() , imageCounter++);
+                    //auto start = std::chrono::high_resolution_clock::now();
+                    //long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(start).count();
+                    gettimeofday(&ts,NULL);
 
-                    pFile = fopen(filename, "wb");
+                    std::string format = prefix+std::string("%012d.%06d.tiff");
+                    sprintf(filename, format.c_str() , ts.tv_sec, ts.tv_usec);
+						 cout << filename;
+
+                    pFile = new ofstream(filename, ios::out | ios::binary);
+                    //ofstream pFile( filename, ios::out | ios::binary );
+                    //pFile = fopen(filename, "wb");
                     currentHeight = 0;
+
                     if (usetiff){
-                      /* Write the header */
-                       WriteHexString(pFile,"4d4d002a");
-                       /* Big endian & TIFF identifier */
-                       offset = nx * ny * 1 + 8;
-                       putc((offset & 0xff000000) / 16777216,pFile);
-                       putc((offset & 0x00ff0000) / 65536,pFile);
-                       putc((offset & 0x0000ff00) / 256,pFile);
-                       putc((offset & 0x000000ff),pFile);
+                      writeheader(pFile,nx,ny);
                     }
+                    currentHeight += ptrGrabResult->GetHeight();
+                    //fwrite(pImageBuffer, 1, m, pFile);
+                    // = reinterpret_cast<char*>(pImageBuffer);
+                    //cout << filename << " write " << m*3 << "bytes" << endl;
+                    pFile->write(dst,m*3);
 
                   }
                 }
@@ -375,11 +564,11 @@ int main(int argc, char* argv[])
     }
 
     // Comment the following two lines to disable waiting on exit.
-    cerr << endl << "Press Enter to exit." << endl;
-    while( cin.get() != '\n');
+    //cerr << endl << "Press Enter to exit." << endl;
+    //while( cin.get() != '\n');
 
     if (inimage){
-      fclose(pFile);
+      pFile->close();
     }
     return exitCode;
 }
