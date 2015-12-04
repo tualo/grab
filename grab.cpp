@@ -8,6 +8,16 @@
 
 #include <sys/time.h>
 
+
+
+// needed for beep
+#include <iostream>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/kd.h>
+#include <unistd.h>
+
+
 // Namespace for using pylon objects.
 using namespace Pylon;
 using namespace GenApi;
@@ -19,6 +29,9 @@ struct timeval ts;
 static const uint32_t c_countOfImagesToGrab = 10000;
 std::string prefix = "/tmp/";
 
+
+
+// write tiff tags
 void writetags(ofstream *pFile,int nx,int ny){
   int offset =0;
   int samples=3;
@@ -315,6 +328,10 @@ void writetags(ofstream *pFile,int nx,int ny){
   pFile->put(0x01);
 }
 
+
+// write tiff header
+// you have to run this function again at the end of the image
+// because the height of the image is kown only at the end
 void writeheader(ofstream *pFile, int nx,int ny){
   int offset =0;
   int samples=3;
@@ -335,6 +352,8 @@ void writeheader(ofstream *pFile, int nx,int ny){
 
 int main(int argc, char* argv[])
 {
+
+
     // The exit code of the sample application.
     int exitCode = 0;
     char filename[128];

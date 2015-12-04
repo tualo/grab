@@ -10,11 +10,12 @@
 #
 ### END INIT INFO
 
-GRAB_USER=jondoe
+export GRAB_USER=jondoe
 export GRAB_PATH=/tmp/
 export GRAB_EXPOSURE=800
 export GRAB_HEIGHT=32
 
+export GRAB_PID=/var/run/grab.pid
 
 # some pylon stuff
 export PYLON_ROOT=/opt/pylon4
@@ -24,21 +25,34 @@ gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
 pylonlibdir=$PYLON_ROOT/lib64
 export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
 
+
+
 case "$1" in
  start)
-   su $GRAB_USER -c grab
+   start-stop-daemon --start --quiet --chuid $GRAB_USER    \
+    --make-pidfile --pidfile $GRAB_PID --background       \
+    --startas /bin/bash -- -c "exec grab > /var/log/grab.log 2>&1"
    ;;
  stop)
-   pkill -9 grab
-   sleep 10
+   start-stop-daemon --stop --pidfile $GRAB_PID
    ;;
  restart)
-   pkill -9 grab
-   sleep 20
-   su $GRAB_USER -c grab
+   start-stop-daemon --stop --pidfile $GRAB_PID
+   sleep 1
+   start-stop-daemon --start --quiet --chuid $GRAB_USER    \
+    --make-pidfile --pidfile $GRAB_PID --background       \
+    --startas /bin/bash -- -c "exec grab > /var/log/grab.log 2>&1"
    ;;
  *)
    echo "Usage: grab-service {start|stop|restart}" >&2
    exit 3
    ;;
 esac
+
+# HINTS
+# place this file in /etc/init.d
+#
+# make it executeable
+# > sudo chmod a+x grab-service
+# register as init script
+# sudo update-rc.d grab-service defaults

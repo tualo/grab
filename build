@@ -1,0 +1,11 @@
+#! /bin/sh
+export PYLON_ROOT=/opt/pylon4
+export GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
+export GENICAM_CACHE_v2_3=${HOME}/genicam_xml_cache
+gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
+pylonlibdir=$PYLON_ROOT/lib64
+export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
+echo $LD_LIBRARY_PATH
+
+make clean
+make

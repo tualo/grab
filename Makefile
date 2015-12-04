@@ -1,5 +1,5 @@
 # Makefile for Basler Pylon sample program
-.PHONY			: all clean
+.PHONY			: all clean install
 
 # The program to build
 NAME			:= grab
@@ -31,3 +31,7 @@ $(NAME).o: $(NAME).cpp
 
 clean			:
 	$(RM) $(NAME).o $(NAME)
+
+
+install		: $(NAME)
+	install -m 0755 $(NAME) /usr/bin
