@@ -18,7 +18,7 @@ LDFLAGS			:= -L$(PYLON_ROOT)/lib64 \
 				   -L$(GENICAM_ROOT)/bin/Linux64_x64 \
 				   -L$(GENICAM_ROOT)/bin/Linux64_x64/GenApi/Generic \
 				   -Wl,-E
-LIBS			:= -lpylonbase -lpylonutility -lGenApi_gcc40_v2_3 -lGCBase_gcc40_v2_3 -lLog_gcc40_v2_3 -lMathParser_gcc40_v2_3 -lXerces-C_gcc40_v2_7_1 -llog4cpp_gcc40_v2_3
+LIBS			:= -lpylonbase -lpylonutility -lGenApi_gcc40_v2_3 -lGCBase_gcc40_v2_3 -lLog_gcc40_v2_3 -lMathParser_gcc40_v2_3 -lXerces-C_gcc40_v2_7_1 -llog4cpp_gcc40_v2_3 -lpthread
 
 # Rules for building
 all				: $(NAME)

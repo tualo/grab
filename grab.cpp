@@ -31,6 +31,8 @@ std::string prefix = "/tmp/";
 
 
 
+
+
 // write tiff tags
 void writetags(ofstream *pFile,int nx,int ny){
   int offset =0;
@@ -328,6 +330,33 @@ void writetags(ofstream *pFile,int nx,int ny){
   pFile->put(0x01);
 }
 
+#include <pthread.h>
+
+#define NUM_THREADS 100
+
+struct thread_info {
+  int index;
+  std::string filename;
+};
+//typedef struct thread_info thread_info;
+struct thread_info threadInfo[NUM_THREADS];// = {0,0,0,0};// = malloc(sizeof(struct thread_block_info));
+
+void* processImage(void *data ){
+  struct thread_info *tib;
+  tib = (struct thread_info *)data;
+
+
+  //std::cout << " inside thread " << tib->filename << std::endl;
+  //std::string sfilename( tib->filename );
+  std::string scmd = "nohup ocrs "+tib->filename+" &";
+  const char* ccmd = scmd.c_str();
+  int result = system(ccmd);
+
+
+  pthread_exit((void*)42);
+	return 0;
+}
+
 
 // write tiff header
 // you have to run this function again at the end of the image
@@ -469,7 +498,7 @@ int main(int argc, char* argv[])
         // This smart pointer will receive the grab result data.
         CGrabResultPtr ptrGrabResult;
 
-
+        int cthread=0;
         // Camera.StopGrabbing() is called automatically by the RetrieveResult() method
         // when c_countOfImagesToGrab images have been retrieved.
         while ( camera.IsGrabbing())
@@ -519,6 +548,25 @@ int main(int argc, char* argv[])
                     }
                     pFile->close();
 
+                    /*
+                    std::string fname(filename);
+                    thread_info* t_info = &threadInfo[cthread];
+                    t_info->filename = fname;
+                    pthread_t thread;
+                    int ct = pthread_create( &thread, NULL, processImage, (void*) t_info);
+                    if( ct  != 0) {
+                     printf("something went wrong while threading %i\n",ct);
+                    }else{
+
+                    }
+                    cthread++;
+                    pthread_detach(thread);
+                    if (cthread==90){
+                      cthread=0;
+                    }else{
+                    }
+                    */
+
                     cout << endl;
                     inimage = false;
 
@@ -529,6 +577,7 @@ int main(int argc, char* argv[])
                     // = reinterpret_cast<char*>(pImageBuffer);
                     //cout << filename << " write " << m*3 << "bytes" << endl;
                     pFile->write(dst,m*3);
+
                   }
 
                 }else if (!inimage){
@@ -544,7 +593,7 @@ int main(int argc, char* argv[])
 
                     std::string format = prefix+std::string("%012d.%06d.tiff");
                     sprintf(filename, format.c_str() , ts.tv_sec, ts.tv_usec);
-						 cout << filename;
+						        cout << filename;
 
                     pFile = new ofstream(filename, ios::out | ios::binary);
                     //ofstream pFile( filename, ios::out | ios::binary );

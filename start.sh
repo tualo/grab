@@ -1,4 +1,4 @@
-export ERP_URL=http://92.79.27.5:8099/macc/index.php
+export ERP_URL=http://localhost/wawi/index.php
 
 export ERP_CLIENT=macc
 export ERP_LOGIN=sorter
@@ -21,7 +21,7 @@ echo $LD_LIBRARY_PATH
 
 
 nohup /home/tualo/genicam/grab < /dev/null > /var/log/grab.log 2>&1 &
-nohup erp-dispatcher service http://92.79.27.5:8099/macc/index.php < /dev/null > /var/log/erp-dispatcher.log 2>&1 &
+nohup erp-dispatcher service $ERP_URL < /dev/null > /var/log/erp-dispatcher.log 2>&1 &
 nohup ocrservice bcocr --quick --processlist /usr/local/lib/node_modules/ocrservice/process_list.json /tmp/ < /dev/null > /var/log/ocrservice.log 2>&1 &
 
 
