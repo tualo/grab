@@ -5,7 +5,7 @@
 NAME			:= grab
 
 # Installation directories for GenICam and Pylon
-PYLON_ROOT		?= /opt/pylon4
+PYLON_ROOT		?= /opt/pylon5
 GENICAM_ROOT	?= $(PYLON_ROOT)/genicam
 
 # Build tools and flags
