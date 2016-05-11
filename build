@@ -1,5 +1,5 @@
 #! /bin/sh
-export PYLON_ROOT=/opt/pylon4
+export PYLON_ROOT=/opt/pylon5
 export GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
 export GENICAM_CACHE_v2_3=${HOME}/genicam_xml_cache
 gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
