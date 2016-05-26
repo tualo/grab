@@ -6,8 +6,8 @@ After=network.target
 Type=forking
 PIDFile=/var/run/grab.pid
 Restart=always
-EnvironmentFile=/etc/sysconfig/grab-environment
-ExecStart=grab > /var/log/grab.log 2>&1
+#EnvironmentFile=/etc/sysconfig/grab-environment
+ExecStart=/bin/sh -e "/opt/grab/grab-start.sh"
 User=root
 
 [Install]
