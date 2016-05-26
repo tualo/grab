@@ -1,0 +1,11 @@
+GRAB_USER=jondoe
+GRAB_PATH=/tmp/
+GRAB_EXPOSURE=800
+GRAB_HEIGHT=32
+GRAB_PID=/var/run/grab.pid
+PYLON_ROOT=/opt/pylon4
+GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
+GENICAM_CACHE_v2_3=${HOME}/genicam_xml_cache
+gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
+pylonlibdir=$PYLON_ROOT/lib64
+export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
