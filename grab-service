@@ -14,18 +14,13 @@ export GRAB_USER=jondoe
 export GRAB_PATH=/tmp/
 export GRAB_EXPOSURE=800
 export GRAB_HEIGHT=32
-
 export GRAB_PID=/var/run/grab.pid
-
-# some pylon stuff
 export PYLON_ROOT=/opt/pylon4
 export GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
 export GENICAM_CACHE_v2_3=${HOME}/genicam_xml_cache
 gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
 pylonlibdir=$PYLON_ROOT/lib64
 export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
-
-
 
 case "$1" in
  start)
@@ -50,8 +45,6 @@ case "$1" in
 esac
 
 # HINTS
-# place this file in /etc/init.d
-#
 # make it executeable
 # > sudo chmod a+x grab-service
 # register as init script

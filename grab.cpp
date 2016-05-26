@@ -571,42 +571,37 @@ int main(int argc, char* argv[])
                     inimage = false;
 
                   }else{
-                    // ok write the image
                     currentHeight += ptrGrabResult->GetHeight();
-                    //fwrite(pImageBuffer, 1, m, pFile);
-                    // = reinterpret_cast<char*>(pImageBuffer);
-                    //cout << filename << " write " << m*3 << "bytes" << endl;
                     pFile->write(dst,m*3);
-
                   }
 
                 }else if (!inimage){
                   if (currentAVG>=startAVG){
-                    //cout << "start image " << imageCounter << endl;
                     inimage=true;
-
-
-
-                    //auto start = std::chrono::high_resolution_clock::now();
-                    //long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(start).count();
                     gettimeofday(&ts,NULL);
+                    // getting the customer number
+                    std::string customer;
+                    std::string line;
+                    ifstream myfile ("/opt/grab/customer.txt");
+                    if (myfile.is_open())
+                    {
+                      while ( getline (myfile,line) )
+                      {
+                        customer = line;
+                      }
+                      myfile.close();
+                    }
 
-                    std::string format = prefix+std::string("%012d.%06d.tiff");
+                    std::string format = prefix+std::string(customer+"N%012d.%06d.tiff");
                     sprintf(filename, format.c_str() , ts.tv_sec, ts.tv_usec);
 						        cout << filename;
 
                     pFile = new ofstream(filename, ios::out | ios::binary);
-                    //ofstream pFile( filename, ios::out | ios::binary );
-                    //pFile = fopen(filename, "wb");
                     currentHeight = 0;
-
                     if (usetiff){
                       writeheader(pFile,nx,ny);
                     }
                     currentHeight += ptrGrabResult->GetHeight();
-                    //fwrite(pImageBuffer, 1, m, pFile);
-                    // = reinterpret_cast<char*>(pImageBuffer);
-                    //cout << filename << " write " << m*3 << "bytes" << endl;
                     pFile->write(dst,m*3);
 
                   }

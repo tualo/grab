@@ -1,0 +1,14 @@
+[Unit]
+Description=Image Grabing Service
+
+[Service]
+Type=forking
+PIDFile=/var/run/grabd.pid
+Restart=on-abort
+ExecStart=/opt/grab/grab-service start
+ExecReload=/opt/grab/grab-service reload
+ExecStop=/opt/grab/grab-service stop
+
+
+[Install]
+WantedBy=multi-user.target

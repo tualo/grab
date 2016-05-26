@@ -41,4 +41,9 @@ clean			:
 
 
 install		: $(NAME)
-	install -m 0755 $(NAME) /usr/bin
+	mkdir /opt/grab
+	cp customer.txt /opt/grab/
+	cp grab-service /opt/grab/grab-service
+	chmod +x /opt/grab/grab-service
+	cp systemd.service /usr/lib/systemd/system/grab.service
+	install -m 0755 $(NAME) /opt/grab/
