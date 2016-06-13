@@ -550,18 +550,13 @@ int main(int argc, char* argv[])
                   dst[i*3+2]=pImageBuffer[i];
 
                 }
-
                 currentAVG = (mainAVGSum/m);
-
-                //cout << "AVG: " << currentAVG << endl;
-
                 if ( adjustAVG == 1){
                   mainAVG = currentAVG;
                   startAVG =  mainAVG + 10;
                   stopAVG =  mainAVG;// - 10;
                   cout << "startAVG: " << startAVG << endl;
                   cout << "stopAVG: " << stopAVG << endl;
-
                   adjustAVG = 0;
                 }else if (inimage){
                   if (currentAVG<=stopAVG){
@@ -572,26 +567,6 @@ int main(int argc, char* argv[])
                        writeheader(pFile,nx,ny);
                     }
                     pFile->close();
-
-                    /*
-                    std::string fname(filename);
-                    thread_info* t_info = &threadInfo[cthread];
-                    t_info->filename = fname;
-                    pthread_t thread;
-                    int ct = pthread_create( &thread, NULL, processImage, (void*) t_info);
-                    if( ct  != 0) {
-                     printf("something went wrong while threading %i\n",ct);
-                    }else{
-
-                    }
-                    cthread++;
-                    pthread_detach(thread);
-                    if (cthread==90){
-                      cthread=0;
-                    }else{
-                    }
-                    */
-
                     cout << endl;
                     inimage = false;
 
