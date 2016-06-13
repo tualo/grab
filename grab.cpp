@@ -378,9 +378,25 @@ void writeheader(ofstream *pFile, int nx,int ny){
   pFile->put( (offset & 0x000000ff) );
 
 }
+/*
+Using device raL2048-48gm
+Camera Device Information
+=========================
+Vendor           : Basler
+Model            : raL2048-48gm
+Firmware version : 105993-14;U;raL2048_48gm;V1.1-2;0
 
+Camera Device Settings
+======================
+Old PixelFormat  : Mono8
+New PixelFormat  : Mono8
+startAVG: 18
+stopAVG: 8
+*/
 int main(int argc, char* argv[])
 {
+
+
 
 
     // The exit code of the sample application.
@@ -409,6 +425,15 @@ int main(int argc, char* argv[])
     int grabExposure = 1000;
     int grabHeight = 32;
     int currentHeight = 0;
+
+
+    if(const char* env_start = std::getenv("GRAB_START_AVG")){
+      startAVG = atoi(env_start);
+      adjustAVG=0;
+    }
+    if(const char* env_stop = std::getenv("GRAB_STOP_AVG")){
+      stopAVG = atoi(env_stop);
+    }
 
     if(const char* env_path = std::getenv("GRAB_PATH")){
       prefix = env_path;
@@ -572,7 +597,9 @@ int main(int argc, char* argv[])
 
                   }else{
                     currentHeight += ptrGrabResult->GetHeight();
-                    pFile->write(dst,m*3);
+                    if (currentHeight<10000){
+                      pFile->write(dst,m*3);
+                    }
                   }
 
                 }else if (!inimage){
