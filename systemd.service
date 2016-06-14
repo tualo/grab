@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/grab.pid
+#PIDFile=/var/run/grab.pid
 Restart=always
 #EnvironmentFile=/etc/sysconfig/grab-environment
-ExecStart=/bin/sh -e "/opt/grab/grab-start.sh"
+ExecStart=/bin/sh -c "/opt/grab/grab-start.sh"
 User=root
 
 [Install]

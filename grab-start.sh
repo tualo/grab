@@ -1,9 +1,11 @@
-#! /bin/sh
+#!/bin/sh
 
 export GRAB_USER=jondoe
 export GRAB_PATH=/tmp/
 export GRAB_EXPOSURE=800
 export GRAB_HEIGHT=32
+export GRAB_START_AVG=18
+export GRAB_STOP_AVG=8
 export GRAB_PID=/var/run/grab.pid
 export PYLON_ROOT=/opt/pylon5
 export GENICAM_ROOT_V2_3=$PYLON_ROOT/genicam
