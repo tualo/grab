@@ -3,7 +3,7 @@ Description=Image Grabing Service
 After=network.target
 
 [Service]
-Type=forking
+#Type=forking
 #PIDFile=/var/run/grab.pid
 Restart=always
 #EnvironmentFile=/etc/sysconfig/grab-environment
