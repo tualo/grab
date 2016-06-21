@@ -494,8 +494,8 @@ int main(int argc, char* argv[])
         CIntegerPtr height( nodemap.GetNode( "Height"));
         height->SetValue(grabHeight);
 
-        //CIntegerPtr exposure( nodemap.GetNode( "Exposure"));
-        //exposure->SetValue(12000);
+        CIntegerPtr exposure( nodemap.GetNode( "Exposure"));
+        exposure->SetValue(12000);
 
         // Access the PixelFormat enumeration type node.
         CEnumerationPtr pixelFormat( nodemap.GetNode( "PixelFormat"));
