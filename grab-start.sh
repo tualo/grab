@@ -14,3 +14,4 @@ gclibdir=$GENICAM_ROOT_V2_3/bin/Linux64_x64
 pylonlibdir=$PYLON_ROOT/lib64
 export LD_LIBRARY_PATH=$pylonlibdir:$gclibdir:$gclibdir/GenApi/Generic:$LD_LIBRARY_PATH
 /opt/grab/grab
+sleep 30
