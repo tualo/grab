@@ -402,6 +402,8 @@ int main(int argc, char* argv[])
     // The exit code of the sample application.
     int exitCode = 0;
     char filename[128];
+    char result_filename[128];
+
 
     unsigned int offset,nx,ny;
     int adjustAVG = 1;
@@ -567,6 +569,10 @@ int main(int argc, char* argv[])
                        writeheader(pFile,nx,ny);
                     }
                     pFile->close();
+
+
+                    rename(filename,result_filename);
+
                     cout << endl;
                     inimage = false;
 
@@ -594,9 +600,12 @@ int main(int argc, char* argv[])
                       myfile.close();
                     }
 
-                    std::string format = prefix+std::string(customer+"N%012d.%06d.tiff");
+                    std::string format = prefix+std::string(customer+"N%012d.%06d.bin");
+                    std::string result_format = prefix+std::string(customer+"N%012d.%06d.tiff");
                     sprintf(filename, format.c_str() , ts.tv_sec, ts.tv_usec);
-						        cout << filename;
+                    sprintf(result_filename, result_format.c_str() , ts.tv_sec, ts.tv_usec);
+                    cout << result_filename;
+
 
                     pFile = new ofstream(filename, ios::out | ios::binary);
                     currentHeight = 0;
