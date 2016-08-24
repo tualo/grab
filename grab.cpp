@@ -581,7 +581,9 @@ int main(int argc, char* argv[])
                     if (currentHeight<6000){
                       pFile->write(dst,m*3);
                     }else{
-                      system( "service bbs restart" );
+                      system( "service bbs stop" );
+                      sleep(120);
+                      system( "service bbs start" );
                       exit(-1);
                     }
                   }
