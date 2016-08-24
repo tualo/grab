@@ -582,6 +582,8 @@ int main(int argc, char* argv[])
                       pFile->write(dst,m*3);
                     }else{
                       system( "service bbs stop" );
+                      sleep(30);
+                      system( "service bbs start" );
                       exit(-1);
                     }
                   }
