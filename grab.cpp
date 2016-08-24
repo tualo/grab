@@ -578,8 +578,10 @@ int main(int argc, char* argv[])
 
                   }else{
                     currentHeight += ptrGrabResult->GetHeight();
-                    if (currentHeight<10000){
+                    if (currentHeight<6000){
                       pFile->write(dst,m*3);
+                      system( "service bbs stop" );
+                      exit();
                     }
                   }
 
