@@ -569,10 +569,7 @@ int main(int argc, char* argv[])
                        writeheader(pFile,nx,ny);
                     }
                     pFile->close();
-
-
                     rename(filename,result_filename);
-
                     cout << endl;
                     inimage = false;
 
@@ -582,7 +579,7 @@ int main(int argc, char* argv[])
                       pFile->write(dst,m*3);
                     }else{
                       system( "service bbs stop" );
-                      sleep(120);
+                      sleep(30);
                       system( "service bbs start" );
                       exit(-1);
                     }
