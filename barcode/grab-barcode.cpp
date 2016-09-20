@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
             if (ptrGrabResult->GrabSucceeded())
             {
 
-                uchar *pImageBuffer = (uchar *) ptrGrabResult->GetBuffer();
+                unsigned char *pImageBuffer = (unsigned char *) ptrGrabResult->GetBuffer();
                 int width = ptrGrabResult->GetWidth();
                 int height = ptrGrabResult->GetHeight();
                 // wrap image data
