@@ -234,7 +234,9 @@ scanner.set_config(zbar::ZBAR_I25, zbar::ZBAR_CFG_ADD_CHECK, 1);
                   cv::merge(lab_planes, lab_image);
 
                   // convert back to RGB
-                  cv::cvtColor(lab_image, cv_image, CV_Lab2BGR);
+                  cv::Mat image_clahe;
+                  cv::cvtColor(lab_image, image_clahe, CV_Lab2BGR);
+                  cv::cvtColor(image_clahe, cv_image, CV_BGR2GRAY);
 
                 }
 
