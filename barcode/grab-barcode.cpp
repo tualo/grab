@@ -1,3 +1,20 @@
+#include <pylon/PylonIncludes.h>
+#include <stdio.h>
+#include <cstdlib>
+#include <fstream>
+#include <pylon/gige/BaslerGigEInstantCamera.h>
+
+#include <sys/time.h>
+
+
+
+// needed for beep
+#include <iostream>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/kd.h>
+#include <unistd.h>
+
 #include <zbar.h>
 #define STR(s) #s
 
