@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
              << "======================" << endl;
 
         if (grabAutoExposure==true){
-          camera.ExposureAuto.SetValue(ExposureAuto_On);
+          camera.ExposureAuto.SetValue(ExposureAuto_Continuous);
         }else{
           camera.ExposureAuto.SetValue(ExposureAuto_Off);
           camera.ExposureTimeRaw.SetValue(grabExposure);
