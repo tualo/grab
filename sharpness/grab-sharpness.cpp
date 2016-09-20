@@ -527,7 +527,7 @@ int main(int argc, char* argv[])
                 //cout << "SizeX: " << ptrGrabResult->GetWidth() << endl;
                 //cout << "SizeY: " << ptrGrabResult->GetHeight() << endl;
                 const uint8_t *pImageBuffer = (uint8_t *) ptrGrabResult->GetBuffer();
-                cv::Mat image(cv::Size(ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight()), cv::CV_8UC1, pImageBuffer, cv::Mat::AUTO_STEP);
+                cv::Mat image(cv::Size(ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight()), CV_8UC1, pImageBuffer, cv::Mat::AUTO_STEP);
                 double contrast = contrast_measure( image );
                 std::cout << "blurred image  : " << contrast << "";
 
