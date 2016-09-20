@@ -6,6 +6,7 @@
 
 #include <sys/time.h>
 
+#include "opencv2/imgproc/imgproc.hpp"
 
 
 // needed for beep
@@ -28,6 +29,19 @@ struct timeval ts;
 // Number of images to be grabbed.
 static const uint32_t c_countOfImagesToGrab = 10000;
 
+
+showImage(cv::Mat& src){
+
+  cv::Mat rotated=src.clone();
+  int x=src.cols /5;
+  int y=src.rows /5;
+
+  cv::Mat res = cv::Mat(x, y, CV_32FC3);
+  cv::resize(rotated, res, cv::Size(x, y), 0, 0, 3);
+  cv::namedWindow("DEBUG", CV_WINDOW_AUTOSIZE );
+  cv::imshow("DEBUG", res );
+  cv::waitKey(0);
+}
 
 int main(int argc, char* argv[]) {
 
@@ -154,6 +168,9 @@ int main(int argc, char* argv[]) {
                 unsigned char *pImageBuffer = (unsigned char *) ptrGrabResult->GetBuffer();
                 int width = ptrGrabResult->GetWidth();
                 int height = ptrGrabResult->GetHeight();
+
+                cv::Mat image(cv::Size(width, height), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
+                showImage(image);
                 // wrap image data
                 Image image(width, height, "Y800", pImageBuffer, width * height);
 
