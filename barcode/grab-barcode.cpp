@@ -22,6 +22,11 @@ using namespace GenApi;
 using namespace std;
 using namespace zbar;
 
+typedef Pylon::CBaslerGigEInstantCamera Camera_t;
+using namespace Basler_GigECameraParams;
+struct timeval ts;
+// Number of images to be grabbed.
+static const uint32_t c_countOfImagesToGrab = 10000;
 
 
 int main(int argc, char* argv[]) {
