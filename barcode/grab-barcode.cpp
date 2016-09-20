@@ -6,6 +6,7 @@
 
 #include <sys/time.h>
 
+#include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
 
@@ -30,7 +31,7 @@ struct timeval ts;
 static const uint32_t c_countOfImagesToGrab = 10000;
 
 
-showImage(cv::Mat& src){
+void showImage(cv::Mat& src){
 
   cv::Mat rotated=src.clone();
   int x=src.cols /5;
