@@ -134,6 +134,12 @@ int main(int argc, char* argv[]) {
         CGrabResultPtr ptrGrabResult;
 
         int cthread=0;
+
+        ImageScanner scanner;
+
+        // configure the reader
+        scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
+
         // Camera.StopGrabbing() is called automatically by the RetrieveResult() method
         // when c_countOfImagesToGrab images have been retrieved.
         while ( camera.IsGrabbing())
@@ -182,12 +188,5 @@ int main(int argc, char* argv[]) {
         exitCode = 1;
     }
 
-    // Comment the following two lines to disable waiting on exit.
-    //cerr << endl << "Press Enter to exit." << endl;
-    //while( cin.get() != '\n');
-
-    if (inimage){
-      pFile->close();
-    }
     return exitCode;
 }
