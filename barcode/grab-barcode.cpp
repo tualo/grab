@@ -217,7 +217,9 @@ scanner.set_config(zbar::ZBAR_I25, zbar::ZBAR_CFG_ADD_CHECK, 1);
 
                 if (barcode_light_correction==true){
                   cv::Mat lab_image;
-                  cv::cvtColor(cv_image, lab_image, CV_BGR2Lab);
+                  cv::Mat c_image;
+                  cv::cvtColor(cv_image, c_image, CV_GRAY2BGR);
+                  cv::cvtColor(c_image, lab_image, CV_BGR2Lab);
 
                   // Extract the L channel
                   std::vector<cv::Mat> lab_planes(3);
@@ -237,7 +239,10 @@ scanner.set_config(zbar::ZBAR_I25, zbar::ZBAR_CFG_ADD_CHECK, 1);
                   cv::Mat image_clahe;
                   cv::cvtColor(lab_image, image_clahe, CV_Lab2BGR);
                   cv::cvtColor(image_clahe, cv_image, CV_BGR2GRAY);
-
+                  
+                  c_image.release();
+                  dst.release();
+                  image_clahe.release();
                 }
 
                 if (debug_window==true){
@@ -275,6 +280,9 @@ scanner.set_config(zbar::ZBAR_I25, zbar::ZBAR_CFG_ADD_CHECK, 1);
 
                 // clean up
                 image.set_data(NULL, 0);
+
+                cv_image.release();
+                delete [] pImageBuffer;
 
             }
             else
