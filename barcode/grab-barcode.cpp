@@ -31,25 +31,41 @@ struct timeval ts;
 static const uint32_t c_countOfImagesToGrab = 10000;
 
 
-void showImage(cv::Mat& src){
+double contrast_measure( const cv::Mat&img )
+{
+    cv::Mat dx, dy;
+    cv::Sobel( img, dx, CV_32F, 1, 0, 3 );
+    cv::Sobel( img, dy, CV_32F, 0, 1, 3 );
+    cv::magnitude( dx, dy, dx );
+    return cv::sum(dx)[0];
+}
 
-  cv::Mat rotated=src.clone();
-  int x=src.cols /5;
-  int y=src.rows /5;
+
+void showImage(cv::Mat& src, int scale, int timeout){
+  cv::Mat rotated=cv_image.clone();
+  int x=cv_image.cols / scale;
+  int y=cv_image.rows / scale;
 
   cv::Mat res = cv::Mat(x, y, CV_32FC3);
   cv::resize(rotated, res, cv::Size(x, y), 0, 0, 3);
   cv::namedWindow("DEBUG", CV_WINDOW_AUTOSIZE );
   cv::imshow("DEBUG", res );
-  cv::waitKey(0);
+  cv::waitKey(timeout);
 }
 
 int main(int argc, char* argv[]) {
-
+    int m=0;
+    int i=0;
+    int mainAVGSum = 0;
     int exitCode = 0;
     int grabExposure = 1000;
     int grabHeight = 128;
     bool grabAutoExposure = false;
+    bool debug_window = false;
+    bool barcode_light_correction=false;
+    int debug_window_scale = 2;
+    int debug_window_timeout = 10;
+
 
 
 
@@ -68,6 +84,27 @@ int main(int argc, char* argv[]) {
     if(const char* env_hgt = std::getenv("GRAB_HEIGHT")){
       grabHeight = atoi(env_hgt);
       cout << "setting grab height to " << grabHeight << endl;
+    }
+
+    if(const char* env_bc_light = std::getenv("BARCODE_LIGHT_CORRECTION")){
+      if (atoi(env_bc_light)==1){
+        barcode_light_correction = true;
+      }
+    }
+
+    if(const char* env_dbg_wnd = std::getenv("DEBUG_WINDOW")){
+      if (atoi(env_dbg_wnd)==1){
+        debug_window = true;
+      }
+    }
+
+
+    if(const char* env_dbg_wnd_tmr = std::getenv("DEBUG_WINDOW_TIMEOUT")){
+      debug_window_timeout = atoi(env_dbg_wnd_tmr);
+    }
+
+    if(const char* env_dbg_wnd_scl = std::getenv("DEBUG_WINDOW_SCALE")){
+      debug_window_scale = atoi(env_dbg_wnd_scl);
     }
 
     // Automagically call PylonInitialize and PylonTerminate to ensure the pylon runtime system
@@ -154,7 +191,12 @@ int main(int argc, char* argv[]) {
 
         // configure the reader
         scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
+/*
+scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
+scanner.set_config(zbar::ZBAR_CODE128, zbar::ZBAR_CFG_ENABLE, 1);
+scanner.set_config(zbar::ZBAR_I25, zbar::ZBAR_CFG_ADD_CHECK, 1);
 
+*/
         // Camera.StopGrabbing() is called automatically by the RetrieveResult() method
         // when c_countOfImagesToGrab images have been retrieved.
         while ( camera.IsGrabbing())
@@ -170,10 +212,52 @@ int main(int argc, char* argv[]) {
                 int width = ptrGrabResult->GetWidth();
                 int height = ptrGrabResult->GetHeight();
 
-                cv::Mat cv_image(cv::Size(width, height), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
-                showImage(cv_image);
+                cv::Mat cv_image(cv::Size(width, height), CV_8UC1, pImageBuffer);
+
+
+                if (barcode_light_correction==true){
+                  cv::Mat lab_image;
+                  cv::cvtColor(cv_image, lab_image, CV_BGR2Lab);
+
+                  // Extract the L channel
+                  std::vector<cv::Mat> lab_planes(3);
+                  cv::split(lab_image, lab_planes);  // now we have the L image in lab_planes[0]
+
+                  // apply the CLAHE algorithm to the L channel
+                  cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+                  clahe->setClipLimit(4);
+                  cv::Mat dst;
+                  clahe->apply(lab_planes[0], dst);
+
+                  // Merge the the color planes back into an Lab image
+                  dst.copyTo(lab_planes[0]);
+                  cv::merge(lab_planes, lab_image);
+
+                  // convert back to RGB
+                  cv::cvtColor(lab_image, cv_image, CV_Lab2BGR);
+
+                }
+
+                if (debug_window==true){
+                  showImage(cv_image,debug_window_scale,debug_window_timeout);
+                }
+
+
+                mainAVGSum = 0;
+                m = (int)ptrGrabResult->GetImageSize();
+                for(i=0;i<m;i+=3){
+                  mainAVGSum+= (uint32_t) pImageBuffer[i];
+                }
+
+		            double contrast = contrast_measure( cv_image );
+                std::cout << "contrast: " << contrast << "" << std::endl;
+                std::cout << "AVG: " <<  (mainAVGSum/m) << "" << std::endl;
+
+
                 // wrap image data
-                Image image(width, height, "Y800", pImageBuffer, width * height);
+                //Image image(width, height, "Y800", pImageBuffer, width * height);
+                Image image(cv_image.cols, cv_image.rows, "Y800", (uchar *)cv_image.data, cv_image.cols * cv_image.rows);
+
 
                 // scan the image for barcodes
                 int n = scanner.scan(image);
