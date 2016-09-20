@@ -538,9 +538,9 @@ int main(int argc, char* argv[])
                 //memcpy(data,pImageBuffer,sizeof(pImageBuffer));
                 cv::Mat image(cv::Size(ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight()), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
                 double contrast = contrast_measure( image );
-                
-                std::cout << "unschaerfe: " << contrast << "" << std::endl;
-                std::cout << "helligkeit: " << (mainAVGSum/m) << "" << std::endl;
+
+                std::cout << "contrast: " << contrast << "" << std::endl;
+                std::cout << "avg: " << (mainAVGSum/m) << "" << std::endl;
 
 
             }
