@@ -526,13 +526,22 @@ int main(int argc, char* argv[])
                 // Access the image data.
                 //cout << "SizeX: " << ptrGrabResult->GetWidth() << endl;
                 //cout << "SizeY: " << ptrGrabResult->GetHeight() << endl;
-                uint8_t *pImageBuffer = (uint8_t *) ptrGrabResult->GetBuffer();
+                uchar *pImageBuffer = (uchar *) ptrGrabResult->GetBuffer();
 
-                char* data = malloc(strlen(pImageBuffer));
-                strcpy(data,pImageBuffer);
-                cv::Mat image(cv::Size(ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight()), CV_8UC1, data);//, cv::Mat::AUTO_STEP);
+                mainAVGSum = 0;
+                m = (int)ptrGrabResult->GetImageSize();
+                for(i=0;i<m;i+=3){
+                  mainAVGSum+= (uint32_t) pImageBuffer[i];
+                }
+
+                //char* data[sizeof(pImageBuffer)];// = malloc(sizeof(pImageBuffer));
+                //memcpy(data,pImageBuffer,sizeof(pImageBuffer));
+                cv::Mat image(cv::Size(ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight()), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
                 double contrast = contrast_measure( image );
-                std::cout << "blurred image  : " << contrast << "";
+                
+                std::cout << "unschaerfe: " << contrast << "" << std::endl;
+                std::cout << "helligkeit: " << (mainAVGSum/m) << "" << std::endl;
+
 
             }
             else
