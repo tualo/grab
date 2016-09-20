@@ -16,8 +16,9 @@
 #include <unistd.h>
 
 #include <zbar.h>
-#define STR(s) #s
 
+using namespace Pylon;
+using namespace GenApi;
 using namespace std;
 using namespace zbar;
 
