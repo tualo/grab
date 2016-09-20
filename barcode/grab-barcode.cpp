@@ -42,9 +42,9 @@ double contrast_measure( const cv::Mat&img )
 
 
 void showImage(cv::Mat& src, int scale, int timeout){
-  cv::Mat rotated=cv_image.clone();
-  int x=cv_image.cols / scale;
-  int y=cv_image.rows / scale;
+  cv::Mat rotated=src.clone();
+  int x=src.cols / scale;
+  int y=src.rows / scale;
 
   cv::Mat res = cv::Mat(x, y, CV_32FC3);
   cv::resize(rotated, res, cv::Size(x, y), 0, 0, 3);
