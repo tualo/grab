@@ -169,8 +169,8 @@ int main(int argc, char* argv[]) {
                 int width = ptrGrabResult->GetWidth();
                 int height = ptrGrabResult->GetHeight();
 
-                cv::Mat image(cv::Size(width, height), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
-                showImage(image);
+                cv::Mat cv_image(cv::Size(width, height), CV_8UC1, pImageBuffer);//, cv::Mat::AUTO_STEP);
+                showImage(cv_image);
                 // wrap image data
                 Image image(width, height, "Y800", pImageBuffer, width * height);
 
