@@ -370,15 +370,14 @@ void writeheader(ofstream *pFile, int nx,int ny){
   pFile->put(0x4d);
   pFile->put(0x00);
   pFile->put(0x2a);
-
   offset = nx * ny * samples + 8;
   pFile->put( (offset & 0xff000000) / 16777216) ;
   pFile->put( (offset & 0x00ff0000) / 65536 );
   pFile->put( (offset & 0x0000ff00) / 256 );
   pFile->put( (offset & 0x000000ff) );
-
 }
 /*
+
 Using device raL2048-48gm
 Camera Device Information
 =========================
